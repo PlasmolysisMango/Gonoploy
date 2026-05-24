@@ -71,6 +71,18 @@ func (g *Game) updateWaitRoll() {
 	if g.uiMgr.DiceButtonClicked() {
 		g.dice.StartRoll()
 		g.turnPhase = TurnRolling
+		return
+	}
+
+	// AI 自动掷骰子
+	if p.IsAI {
+		g.aiThinkTimer++
+		if g.aiThinkTimer >= AIThinkTicks {
+			g.aiThinkTimer = 0
+			g.uiMgr.AddMessage(fmt.Sprintf("[AI]%s 掷骰子", p.Name))
+			g.dice.StartRoll()
+			g.turnPhase = TurnRolling
+		}
 	}
 }
 
@@ -131,9 +143,21 @@ func (g *Game) updateLanded() {
 		g.handleEventSpace(p, s)
 	case model.SpaceLand, model.SpaceUtility, model.SpaceTransport:
 		if s.Owner == nil {
-			g.uiMgr.SetEventText(fmt.Sprintf("%s 无主，价格$%d\n按B购买", s.Name, s.Price))
+			// AI 分支：自动决策是否购买
+			if p.IsAI {
+				if s.IsBuyable() && p.Money >= s.Price && g.aiShouldBuyLand(p, s) {
+					g.uiMgr.AddMessage(fmt.Sprintf("[AI]%s 决定购买 %s", p.Name, s.Name))
+					g.buyProperty(p, s)
+				} else {
+					g.uiMgr.AddMessage(fmt.Sprintf("[AI]%s 放弃购买 %s", p.Name, s.Name))
+				}
+				g.aiThinkTimer = 0
+				g.turnPhase = TurnOperating
+				return
+			}
+			g.uiMgr.SetEventText(fmt.Sprintf("%s 无主，价格%d元\n点击「买地」购买", s.Name, s.Price))
 			g.turnPhase = TurnOperating
-			g.menuState = MenuMain
+			g.enterMenuMain()
 			return
 		} else if s.Owner != p {
 			charge := p.GetCharge(s, g.board, g.dice.Sum)
@@ -150,7 +174,11 @@ func (g *Game) updateLanded() {
 	}
 
 	g.turnPhase = TurnOperating
-	g.menuState = MenuMain
+	if p.IsAI {
+		g.aiThinkTimer = 0
+		return
+	}
+	g.enterMenuMain()
 }
 
 func (g *Game) handleEventSpace(p *model.Player, s *model.Space) {

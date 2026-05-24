@@ -98,5 +98,5 @@ func Load() *Assets {
 }
 
 func CharacterNames() []string {
-	return []string{"黑子", "泪子", "警策", "食蜂", "当麻", "美琴", "初春", "削板", "婚后"}
+	return []string{"黑子", "泪子", "警策", "食蜂"}
 }

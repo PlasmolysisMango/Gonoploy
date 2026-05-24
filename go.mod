@@ -5,6 +5,7 @@ go 1.25.4
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.9.4
 	golang.org/x/image v0.31.0
+	nhooyr.io/websocket v1.8.17
 )
 
 require (

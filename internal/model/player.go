@@ -20,6 +20,7 @@ type Player struct {
 	BonusCount    int
 	Bankrupt      bool
 	HasOperated   bool
+	IsAI          bool `json:"is_ai"`
 }
 
 type Blessing struct {

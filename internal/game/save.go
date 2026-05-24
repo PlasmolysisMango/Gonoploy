@@ -24,6 +24,7 @@ type SavePlayer struct {
 	SkillPoints   int           `json:"skill_points"`
 	BonusCount    int           `json:"bonus_count"`
 	Bankrupt      bool          `json:"bankrupt"`
+	IsAI          bool          `json:"is_ai,omitempty"`
 	Blessings     []SaveBlessing `json:"blessings"`
 }
 
@@ -60,6 +61,7 @@ func (g *Game) Save(filename string) error {
 			SkillPoints:   p.SkillPoints,
 			BonusCount:    p.BonusCount,
 			Bankrupt:      p.Bankrupt,
+			IsAI:          p.IsAI,
 		}
 		for _, b := range p.Blessings {
 			sp.Blessings = append(sp.Blessings, SaveBlessing{
@@ -118,6 +120,7 @@ func (g *Game) Load(filename string) error {
 		p.SkillPoints = sp.SkillPoints
 		p.BonusCount = sp.BonusCount
 		p.Bankrupt = sp.Bankrupt
+		p.IsAI = sp.IsAI
 		p.Blessings = nil
 		for _, b := range sp.Blessings {
 			p.Blessings = append(p.Blessings, model.Blessing{
