@@ -222,9 +222,9 @@ func (g *Game) drawCharSelect(screen *ebiten.Image) {
 func (g *Game) drawPlaying(screen *ebiten.Image) {
 	g.renderer.DrawBoard(screen)
 	g.renderer.DrawPropertyStatus(screen, g.board)
-	g.renderer.DrawPlayers(screen, g.players, g.board)
-	g.renderer.DrawDice(screen, g.dice)
 	g.uiMgr.Draw(screen)
+	g.renderer.DrawDice(screen, g.dice)
+	g.renderer.DrawPlayers(screen, g.players, g.board)
 }
 
 func (g *Game) drawGameOver(screen *ebiten.Image) {

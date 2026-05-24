@@ -28,18 +28,22 @@ type Renderer struct {
 	boardBG   *ebiten.Image
 	textSmall *assetfont.TextCache
 	textMed   *assetfont.TextCache
+	textName  *assetfont.TextCache
+	textPrice *assetfont.TextCache
 }
 
 func NewRenderer() *Renderer {
 	return &Renderer{
 		textSmall: assetfont.NewTextCache(12),
 		textMed:   assetfont.NewTextCache(16),
+		textName:  assetfont.NewTextCache(20),
+		textPrice: assetfont.NewTextCache(15),
 	}
 }
 
 func (r *Renderer) InitBoardBackground(board *model.Board) {
 	r.boardBG = ebiten.NewImage(ScreenWidth, ScreenHeight)
-	r.boardBG.Fill(color.RGBA{240, 240, 230, 255})
+	r.boardBG.Fill(color.RGBA{200, 200, 200, 255})
 
 	for _, s := range board.Spaces {
 		r.drawSpace(s)
@@ -52,7 +56,22 @@ func (r *Renderer) drawSpace(s *model.Space) {
 	w := float32(s.Rect.Dx())
 	h := float32(s.Rect.Dy())
 
-	vector.DrawFilledRect(r.boardBG, x, y, w, h, color.White, false)
+	// Corner spaces get colored backgrounds
+	bgColor := color.RGBA{255, 255, 255, 255}
+	if s.Type == model.SpaceEvent && s.Rect.Dx() == 200 && s.Rect.Dy() == 200 {
+		switch s.ID {
+		case 0: // 起点
+			bgColor = color.RGBA{240, 200, 130, 255}
+		case 5: // 技能
+			bgColor = color.RGBA{240, 200, 130, 255}
+		case 16: // 监狱
+			bgColor = color.RGBA{180, 180, 180, 255}
+		case 21: // 祝福
+			bgColor = color.RGBA{240, 200, 130, 255}
+		}
+	}
+
+	vector.DrawFilledRect(r.boardBG, x, y, w, h, bgColor, false)
 	vector.StrokeRect(r.boardBG, x, y, w, h, 2, color.Black, false)
 
 	if s.Color != "" && s.Color != "NONE" {
@@ -69,7 +88,7 @@ func (r *Renderer) drawColorBar(s *model.Space, clr color.RGBA) {
 	w := float32(s.Rect.Dx())
 	h := float32(s.Rect.Dy())
 
-	barSize := float32(20)
+	barSize := float32(30)
 	switch s.Orient {
 	case model.OrientLeft:
 		vector.DrawFilledRect(r.boardBG, x+w-barSize, y, barSize, h, clr, false)
@@ -84,20 +103,34 @@ func (r *Renderer) drawColorBar(s *model.Space, clr color.RGBA) {
 
 func (r *Renderer) drawSpaceText(s *model.Space) {
 	center := s.Center()
+	h := s.Rect.Dy()
 
-	nameImg := r.textSmall.GetImage(s.Name, color.Black)
+	nameImg := r.textName.GetImage(s.Name, color.Black)
 	nw, nh := nameImg.Bounds().Dx(), nameImg.Bounds().Dy()
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(center.X-nw/2), float64(center.Y-nh/2-8))
+	nameX := float64(center.X - nw/2)
+	nameY := float64(center.Y - nh/2)
+	if s.BasePrice > 0 {
+		nameY = float64(center.Y - nh/2 - h/10)
+	}
+	// Clamp to space bounds
+	if nameX < float64(s.Rect.Min.X+2) {
+		nameX = float64(s.Rect.Min.X + 2)
+	}
+	op.GeoM.Translate(nameX, nameY)
 	r.boardBG.DrawImage(nameImg, op)
 
 	if s.BasePrice > 0 {
-		priceStr := fmt.Sprintf("$%d", s.BasePrice)
-		priceImg := r.textSmall.GetImage(priceStr, color.RGBA{100, 100, 100, 255})
+		priceStr := fmt.Sprintf("价格：%d元", s.BasePrice)
+		priceImg := r.textPrice.GetImage(priceStr, color.Black)
 		pw := priceImg.Bounds().Dx()
 		op2 := &ebiten.DrawImageOptions{}
-		op2.GeoM.Translate(float64(center.X-pw/2), float64(center.Y+4))
+		priceX := float64(center.X - pw/2)
+		if priceX < float64(s.Rect.Min.X+2) {
+			priceX = float64(s.Rect.Min.X + 2)
+		}
+		op2.GeoM.Translate(priceX, float64(center.Y+h/10))
 		r.boardBG.DrawImage(priceImg, op2)
 	}
 }

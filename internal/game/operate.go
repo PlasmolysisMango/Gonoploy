@@ -13,12 +13,12 @@ func (g *Game) updateOperatingFull() {
 
 	switch g.menuState {
 	case MenuMain:
-		if inpututil_isKeyJustPressed(ebiten.KeyB) {
+		if g.uiMgr.BuyButtonClicked() {
 			if s.IsBuyable() && p.Money >= s.Price {
 				g.buyProperty(p, s)
 			}
 		}
-		if inpututil_isKeyJustPressed(ebiten.KeyC) {
+		if inpututil_isKeyJustPressed(ebiten.KeyC) || g.uiMgr.OperateButtonClicked() {
 			g.menuState = MenuBuild
 			g.buildCursor = 0
 			g.updateBuildableList()
