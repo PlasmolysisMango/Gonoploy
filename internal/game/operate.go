@@ -42,7 +42,7 @@ func (g *Game) updateOperatingFull() {
 		if inpututil_isKeyJustPressed(ebiten.KeyS) {
 			g.useSkill(p)
 		}
-		if inpututil_isKeyJustPressed(ebiten.KeyN) {
+		if g.uiMgr.EndTurnClicked() {
 			g.turnPhase = TurnEndTurn
 		}
 

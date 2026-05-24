@@ -55,6 +55,7 @@ func (g *Game) updatePlaying() {
 }
 
 func (g *Game) updateWaitRoll() {
+	g.uiMgr.SetDiceMode(true)
 	p := g.ActivePlayer()
 	if p.InJail > 0 {
 		p.InJail--
@@ -91,7 +92,9 @@ func (g *Game) updateRolling() {
 
 		g.moveSteps = g.dice.Sum
 		g.moveCounter = 0
+		g.moveTick = 0
 		g.turnPhase = TurnMoving
+		g.uiMgr.SetDiceMode(false)
 	}
 }
 
@@ -175,11 +178,13 @@ func (g *Game) updateEndTurn() {
 		g.uiMgr.AddMessage(fmt.Sprintf("%s 掷出双数，再来一次!", p.Name))
 		p.HasOperated = false
 		g.dice.Reset()
+		g.uiMgr.SetDiceMode(true)
 		g.turnPhase = TurnWaitRoll
 	} else {
 		p.BonusCount = 0
 		g.dice.Reset()
 		g.nextPlayer()
+		g.uiMgr.SetDiceMode(true)
 		g.uiMgr.AddMessage(fmt.Sprintf("轮到 %s", g.ActivePlayer().Name))
 		g.turnPhase = TurnWaitRoll
 	}

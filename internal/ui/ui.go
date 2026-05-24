@@ -95,11 +95,14 @@ type Manager struct {
 	BtnChar     *Button
 	BtnSetting  *Button
 	BtnOperate  *Button
+
+	diceMode    bool // true = roll dice, false = end turn
 }
 
 func NewManager(tc *assetfont.TextCache) *Manager {
 	m := &Manager{
 		textCache: tc,
+		diceMode:  true,
 	}
 	// Match Python layout exactly:
 	// dice_button: [700, 550, 200, 100]
@@ -240,7 +243,17 @@ func (m *Manager) SetEventText(text string) {
 }
 
 func (m *Manager) DiceButtonClicked() bool {
+	if !m.diceMode {
+		return false
+	}
 	return m.BtnDice.Clicked() || inpututil.IsKeyJustPressed(ebiten.KeyD)
+}
+
+func (m *Manager) EndTurnClicked() bool {
+	if m.diceMode {
+		return false
+	}
+	return m.BtnDice.Clicked() || inpututil.IsKeyJustPressed(ebiten.KeyN)
 }
 
 func (m *Manager) BuyButtonClicked() bool {
@@ -249,6 +262,23 @@ func (m *Manager) BuyButtonClicked() bool {
 
 func (m *Manager) OperateButtonClicked() bool {
 	return m.BtnOperate.Clicked()
+}
+
+func (m *Manager) CharClicked() bool {
+	return m.BtnChar.Clicked()
+}
+
+func (m *Manager) SettingClicked() bool {
+	return m.BtnSetting.Clicked()
+}
+
+func (m *Manager) SetDiceMode(isDice bool) {
+	m.diceMode = isDice
+	if isDice {
+		m.BtnDice.Label = "骰子!"
+	} else {
+		m.BtnDice.Label = "结束回合"
+	}
 }
 
 func (m *Manager) SetPlayerInfo(name string, money int, skillPts int) {
